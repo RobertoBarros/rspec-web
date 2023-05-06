@@ -11,6 +11,37 @@
       .text-center { text-align: center; }
     </style>
 
+      <script>
+      (() => {
+        const wsUrl = `ws://${location.host}/websocket`;
+        let ws;
+        let wasDisconnected = false;
+
+        const setupWebSocket = () => {
+          ws = new WebSocket(wsUrl);
+
+          ws.onopen = () => {
+            // console.log("Connected to WebSocket");
+            if (wasDisconnected) {
+              location.reload();
+            }
+          };
+
+          ws.onclose = () => {
+            // console.log("Disconnected from WebSocket");
+            wasDisconnected = true;
+            setTimeout(setupWebSocket, 1000);
+          };
+
+          ws.onerror = (error) => {
+            // console.error("WebSocket error:", error);
+          };
+        };
+
+        setupWebSocket();
+      })();
+    </script>
+
     <script type="text/javascript">
         const setCookie = (name, value, days) => {
           const date = new Date();
@@ -100,7 +131,15 @@
                   <%= example.full_description %>
                 </span>
               </summary>
-              <p>…</p>
+              <% if example.execution_result.status == :failed %>
+                <pre><code>
+                  <%= example.execution_result.exception.message %>
+                  <details>
+                    <summary>Backtrace</summary>
+                      <%= example.execution_result.exception.backtrace.join("<br>") %>
+                  </details>
+                </code></pre>
+              <% end %>
             </details>
           <% end %>
 

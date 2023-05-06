@@ -1,9 +1,30 @@
 require 'sinatra'
+require 'sinatra-websocket'
+
+set :server, 'thin'
+set :sockets, []
 
 get '/' do
   # `rdbg -O -n -c -- rspec --format WebFormatter --require #{File.dirname(__FILE__)}/web_formatter.rb`
   html = `rspec --format WebFormatter --require #{File.dirname(__FILE__)}/web_formatter.rb`
   remove_text_around_html_tags(html)
+end
+
+get '/websocket' do
+  if request.websocket?
+    request.websocket do |ws|
+      ws.onopen do
+        settings.sockets << ws
+      end
+      ws.onclose do
+        settings.sockets.delete(ws)
+      end
+    end
+  end
+end
+
+at_exit do
+  settings.sockets.each(&:close)
 end
 
 private
