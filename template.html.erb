@@ -1,0 +1,129 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <title><%= @title %></title>
+    <style>
+      .passed { color: green; }
+      .pending { color: orange; }
+      .failed { color: red; }
+      .text-center { text-align: center; }
+    </style>
+
+    <script type="text/javascript">
+        const setCookie = (name, value, days) => {
+          const date = new Date();
+          date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+          const expires = `expires=${date.toUTCString()}`;
+          document.cookie = `${name}=${value};${expires};path=/`;
+        }
+
+        const getCookie = (name) => {
+          const cookieName = `${name}=`;
+          const cookies = decodeURIComponent(document.cookie).split(';');
+          const cookie = cookies.find(c => c.trim().startsWith(cookieName));
+          return cookie ? cookie.substring(cookieName.length).trim() : "";
+        }
+
+        const saveCheckboxStatus = () => {
+          const isChecked = document.getElementById("switch-passed").checked;
+          setCookie("switchPassed", isChecked, 30);
+        }
+
+        const loadCheckboxStatus = () => {
+          const isChecked = getCookie("switchPassed");
+          document.getElementById("switch-passed").checked = (isChecked === 'true');
+          togglePassed({ target: { checked: isChecked === 'true' } });
+        }
+
+        const togglePassed = (event) => {
+          const passedElements = document.querySelectorAll('.hide-passed');
+          passedElements.forEach(element => {
+            element.style.display = event.target.checked ? 'none' : 'block';
+          });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+          loadCheckboxStatus();
+
+          document.getElementById('switch-passed').addEventListener('change', (event) => {
+            saveCheckboxStatus();
+            togglePassed(event);
+          });
+        });
+
+    </script>
+  </head>
+  <body>
+    <main class="container">
+
+      <nav>
+        <ul>
+          <li>
+            <%= pluralize(@summary.example_count, 'example') %>
+
+            <% if @summary.failure_count.positive? %>
+              ( 🤬
+              <span class="failed">
+                <%= pluralize(@summary.failure_count, 'failure') %>
+              </span>
+              )
+            <% else %>
+              <span class="passed"> ( All Passing 🎉🎉🎉) </span>
+            <% end %>
+          </li>
+        </ul>
+        <ul>
+          <li>
+            <fieldset>
+              <label for="switch">
+                <input type="checkbox" id="switch-passed"  role="switch" >
+                Hide Passed
+              </label>
+            </fieldset>
+          </li>
+        </ul>
+      </nav>
+
+
+      <% @summary_hash.each do |group_name, examples| %>
+        <article class='<%= 'hide-passed' if examples.select { |e| e.execution_result.status == :failed }.count.zero? %>'>
+          <header><%= group_name %></header>
+          <% examples.each do |example| %>
+            <details class='<%= 'hide-passed' if example.execution_result.status == :passed %>'>
+              <summary>
+                <span class="<%= example.execution_result.status %>">
+                  <%= '💚' if example.execution_result.status == :passed %>
+                  <%= '🤔' if example.execution_result.status == :pending %>
+                  <%= '🤬' if example.execution_result.status == :failed %>
+                  <%= example.full_description %>
+                </span>
+              </summary>
+              <p>…</p>
+            </details>
+          <% end %>
+
+          <footer class='text-center'>
+
+              <span class="passed">
+                💚 <%= examples.select { |e| e.execution_result.status == :passed }.count %> passed
+              </span>
+              &nbsp;|&nbsp;
+              <span class="failed">
+                🤬 <%= examples.select { |e| e.execution_result.status == :failed }.count %> failed
+              </span>
+              <% if examples.select { |e| e.execution_result.status == :pending }.count.positive? %>
+                &nbsp;|&nbsp;
+                <span class="pending">
+                  🤔 <%= examples.select { |e| e.execution_result.status == :pending }.count %> pending
+                </span>
+              <% end %>
+
+          </footer>
+        </article>
+      <% end %>
+
+    </main>
+  </body>
+</html>
