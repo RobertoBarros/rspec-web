@@ -1,85 +1,43 @@
 require 'rspec'
+require 'rspec/core/formatters/base_formatter'
 require 'erb'
 require 'irb'
 
-class WebFormatter
+class WebFormatter < RSpec::Core::Formatters::BaseFormatter
   include ERB::Util
 
-  RSpec::Core::Formatters.register self,
-    :dump_failures,
-    :dump_pending,
-    :dump_summary,
-    :close,
-    :example_passed,
-    :example_failed,
-    :example_pending,
-    :example_started,
-    :example_group_finished
+  RSpec::Core::Formatters.register self, :dump_summary, :close
 
-  TEMPLATE = File.read(File.dirname(__FILE__) + "/template.html.erb").freeze
+  TEMPLATE = File.read("#{File.dirname(__FILE__)}/template.html.erb")
 
-  def initialize(output)
-    @passed = []
-    @failed = []
-    @pending = []
-
-    @output = output
+  def dump_summary(summary)
+    @summary = summary
+    @summary_hash = summary_hash(summary)
+    @title = title
   end
 
-  def example_started(notification)
-
-  end
-
-  def example_group_finished(notification)
-
-  end
-
-  def example_passed(notification)
-    @passed << notification
-  end
-
-  def example_failed(notification)
-    @failed << notification
-  end
-
-  def example_pending(notification)
-    @pending << notification
-  end
-
-  def dump_pending(notification)
-
-  end
-
-  def dump_failures(notification)
-
-  end
-
-  def dump_summary(notification)
-    @summary = notification
-    @summary_hash = summary_hash(notification)
-  end
-
-  def close(notification)
-    @output << render
+  def close(_notification)
+    output.puts render
   end
 
   private
 
   def render
-    @title = title
     ERB.new(TEMPLATE).result(binding)
   end
 
   def title
-    passed_count = @passed.count
-    total = @summary.examples.count
-    pending_count = @pending.count
-    pending = " - #{pending_count} pending" if pending_count.positive?
-    "#{passed_count}/#{total} passed #{pending}"
+    total_examples = @summary.example_count
+    failed_examples = @summary.failure_count
+    pending_examples = @summary.pending_count
+    passed_examples = total_examples - failed_examples - pending_examples
+
+    pending = " - #{pending_examples} pending" if pending_examples.positive?
+    "#{passed_examples}/#{total_examples} passed #{pending}"
   end
 
   def pluralize(count, string)
-    "#{count} #{string}#{'s' unless count.to_f == 1}"
+    "#{count} #{string}#{'s' unless count.to_i == 1}"
   end
 
   def summary_hash(summary_notification)

@@ -132,13 +132,14 @@
                 </span>
               </summary>
               <% if example.execution_result.status == :failed %>
-                <pre><code>
-                  <%= example.execution_result.exception.message %>
-                  <details>
-                    <summary>Backtrace</summary>
-                      <%= example.execution_result.exception.backtrace.join("<br>") %>
-                  </details>
-                </code></pre>
+                <%
+                  exception = example.execution_result.exception
+                  exception_presenter = RSpec::Core::Formatters::ExceptionPresenter.new(exception, example)
+                  formatted_lines = exception_presenter.fully_formatted_lines(nil, RSpec::Core::Notifications::NullColorizer).drop(2).join("\n")
+                %>
+                <pre><code><%= h(formatted_lines) %></code></pre>
+              <% else %>
+                <pre><code><%= h(example.execution_result.inspect) %></code></pre>
               <% end %>
             </details>
           <% end %>
