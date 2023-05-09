@@ -14,6 +14,7 @@ class WebFormatter < RSpec::Core::Formatters::BaseFormatter
     @summary = summary
     @summary_hash = summary_hash(summary)
     @title = title
+    @compliments = ["You are awesome!", "You have a beautiful soul.", "Your positivity is contagious.", "You're incredibly talented.", "You have a fantastic sense of humor.", "You are so kind and compassionate.", "Your creativity is inspiring.", "You have a wonderful smile.", "Your presence brightens up any room.", "You are a great listener and friend.", "You are a true problem solver.", "Your energy is uplifting.", "You have a unique perspective.", "You're a natural leader.", "You always know the right thing to say.", "Your passion is inspiring.", "You are a ray of sunshine.", "You are wise beyond your years.", "You have an infectious enthusiasm.", "You are truly one of a kind."]
   end
 
   def close(_notification)

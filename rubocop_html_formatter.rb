@@ -1,34 +1,26 @@
-# rubocop_html_formatter.rb
 require 'rubocop'
 require 'erb'
 
-module RuboCop
-  module Formatter
-    class HTMLFormatter < BaseFormatter
+class WebFormatter < RuboCop::Formatter::BaseFormatter
+  TEMPLATE = File.read("#{File.dirname(__FILE__)}/template_rubocop.html.erb")
 
-      TEMPLATE = File.read("#{File.dirname(__FILE__)}/template_rubocop.html.erb")
+  def initialize(output, options = {})
+    super
+    @offenses = {}
+  end
 
-      def initialize(output, options = {})
-        super
-        @files = []
-        @offenses = []
-        @summary = Summary.new(offense_count: 0)
-      end
+  def file_finished(file, offenses)
+    @offenses[RuboCop::PathUtil.smart_path(file)] = offenses if offenses.any?
+  end
 
-      def started(target_files)
-        summary.target_files = target_files
-      end
+  def finished(inspected_files)
+    erb = ERB.new(TEMPLATE, trim_mode: '-')
+    html = erb.result(binding)
 
-      def file_finished(file, offenses)
-        @offenses.concat(offenses.map { |offense| { file:, offense: } })
-      end
+    output.write html
+  end
 
-      def finished(inspected_files)
-        erb = ERB.new(TEMPLATE, trim_mode: '-')
-        html = erb.result(binding)
-
-        output.write html
-      end
-    end
+  def pluralize(count, string)
+    "#{count} #{string}#{'s' unless count.to_i == 1}"
   end
 end

@@ -87,12 +87,12 @@
     </script>
   </head>
   <body>
-    <main class="container">
 
+    <section class="container">
       <nav>
         <ul>
           <li>
-            <%= pluralize(@summary.example_count, 'example') %>
+            RSpec: <%= pluralize(@summary.example_count, 'example') %>
 
             <% if @summary.failure_count.positive? %>
               ( 🤬
@@ -116,8 +116,11 @@
           </li>
         </ul>
       </nav>
+      ### RUBOBOP TEMPLATE ###
 
+    </section>
 
+    <section class="container">
       <% @summary_hash.each do |group_name, examples| %>
         <article class='<%= 'hide-passed' if examples.select { |e| e.execution_result.status == :failed }.count.zero? %>'>
           <header><%= group_name %></header>
@@ -139,7 +142,7 @@
                 %>
                 <pre><code><%= h(formatted_lines) %></code></pre>
               <% else %>
-                <pre><code><%= h(example.execution_result.inspect) %></code></pre>
+                <code><%= @compliments.sample %></code>
               <% end %>
             </details>
           <% end %>
@@ -164,6 +167,6 @@
         </article>
       <% end %>
 
-    </main>
+    </section>
   </body>
 </html>

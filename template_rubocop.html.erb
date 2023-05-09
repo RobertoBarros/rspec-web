@@ -1,38 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>RuboCop HTML Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; }
-    h1 { color: #5E97F6; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-    .severity { text-transform: uppercase; }
-  </style>
-</head>
-<body>
-  <h1>RuboCop HTML Report</h1>
-  <table>
-    <tr>
-      <th>File</th>
-      <th>Line</th>
-      <th>Column</th>
-      <th>Severity</th>
-      <th>Cop</th>
-      <th>Message</th>
-    </tr>
-    <% @offenses.each do |o| %>
-    <tr>
-      <td><%= o[:file] %></td>
-      <td><%= o[:offense].line %></td>
-      <td><%= o[:offense].column %></td>
-      <td class="severity"><%= o[:offense].severity %></td>
-      <td><%= o[:offense].cop_name %></td>
-      <td><%= o[:offense].message %></td>
-    </tr>
+<details>
+  <summary>
+    Rubocop:
+    <% if @offenses.values.flatten.count.positive? %>
+      <span class='failed'><%= pluralize(@offenses.values.flatten.count, 'offense') %> detected</span>
+    <% else %>
+      <span class='passed'>No offenses detected 🎉🎉🎉</span>
     <% end %>
-  </table>
-</body>
-</html>
+  </summary>
+  <article>
+    <%= "No offenses 🎉" if @offenses.count.zero? %>
+
+    <% @offenses.each do |file, offenses| %>
+      <details>
+        <summary>
+          <small><code><%= file %></code></small>: <%= pluralize(offenses.count, 'offense') %>
+        </summary>
+
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Offense</th>
+              <th scope="col">Line</th>
+              <th scope="col">Column</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% offenses.each do |offense| %>
+              <tr>
+                <td><%= offense.message.gsub(/^#{offense.cop_name}:/,'') %></td>
+                <td><%= offense.line %></td>
+                <td><%= offense.column %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </details>
+    <% end %>
+  </article>
+</details>

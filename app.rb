@@ -6,13 +6,10 @@ set :server, 'thin'
 set :sockets, []
 
 get '/' do
-  # html = `rdbg -O -n -c -- rspec --format WebFormatter --require #{File.dirname(__FILE__)}/web_formatter.rb`
   html = `rspec --format WebFormatter --require #{File.dirname(__FILE__)}/web_formatter.rb`
+  html_rubocop = `rubocop --require #{File.dirname(__FILE__)}/rubocop_html_formatter.rb --format WebFormatter`
+  html.gsub!('### RUBOBOP TEMPLATE ###', html_rubocop)
   remove_text_around_html_tags(html)
-
-  html_rubocop = `rubocop --require #{File.dirname(__FILE__)}/rubocop_html_formatter.rb --format RuboCop::Formatter::HTMLFormatter`
-
-  html_rubocop
 end
 
 get '/websocket' do
