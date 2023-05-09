@@ -5,6 +5,7 @@ First clone this repository to your laptop:
 ```bash
 cd ~/code
 git clone git@github.com:RobertoBarros/rspec-web.git
+cd rspec-web
 bundle
 ```
 
