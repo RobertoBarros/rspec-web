@@ -1,3 +1,5 @@
+# This spec is on for verify the sinatra app.rb behavior
+# use like rerun ruby app.rb
 require_relative "./calculator"
 
 RSpec.describe Calculator do
